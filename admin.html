@@ -276,11 +276,12 @@
     };
 
     function refreshData() {
-      renderOrdersTable();
-      renderUsersTable();
-      renderAnalytics();
-      renderAdminProducts();
-    }
+    const orders = JSON.parse(localStorage.getItem('thisshop_orders')) || [];
+    renderOrdersTable();
+    renderUsersTable();
+    renderAnalytics(orders);
+    renderAdminProducts();
+}
 
     function switchTab(tab) {
       ['orders', 'users', 'analytics', 'products'].forEach(t => {
