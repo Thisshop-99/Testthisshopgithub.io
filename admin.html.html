@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thisshop Direct - Admin Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & Padauk for Burmese -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Padauk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        thisshop: {
+                            50: '#fff1f0',
+                            100: '#ffccc7',
+                            500: '#ff4d4f',
+                            600: '#e52e2d', /* Signature Thisshop Red */
+                            700: '#cf1322',
+                            dark: '#141414',
+                            card: '#1f1f1f'
+                        },
+                        kpay: '#00529b',
+                        wave: '#fec800'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Padauk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1f1f1f;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #e52e2d;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex flex-col md:flex-row antialiased">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-thisshop-dark border-r border-gray-800 flex-shrink-0 flex flex-col justify-between">
+        <div>
+            <!-- Brand Logo Header -->
+            <div class="p-5 border-b border-gray-800 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-gradient-to-r from-thisshop-600 to-red-500 text-white font-black text-xl px-2.5 py-1 rounded-lg tracking-wider transform -skew-x-6">
+                        THISSHOP
+                    </div>
+                    <span class="text-[9px] font-extrabold bg-red-950 text-red-400 border border-red-800/60 px-2 py-0.5 rounded-full uppercase tracking-widest">ADMIN</span>
+                </div>
+                <!-- Language Toggle Button -->
+                <button onclick="toggleAdminLang()" class="text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-lg border border-gray-700 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-globe text-thisshop-500"></i>
+                    <span id="adminLangLabel" class="font-bold">မြန်မာ</span>
+                </button>
+            </div>
+
+            <!-- Sidebar Navigation Links -->
+            <nav class="p-4 space-y-1 text-xs font-semibold">
+                <button onclick="switchAdminTab('dashboard')" id="nav-dash" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-thisshop-600 text-white shadow-md transition">
+                    <i class="fa-solid fa-chart-pie text-base w-5"></i>
+                    <span id="lbl-nav-dash">Dashboard Summary</span>
+                </button>
+                <button onclick="switchAdminTab('orders')" id="nav-orders" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                    <span class="flex items-center space-x-3">
+                        <i class="fa-solid fa-receipt text-base w-5"></i>
+                        <span id="lbl-nav-orders">Orders & Payments</span>
+                    </span>
+                    <span id="pendingBadge" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full">0</span>
+                </button>
+                <button onclick="switchAdminTab('products')" id="nav-products" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-box-archive text-base w-5"></i>
+                    <span id="lbl-nav-products">Products Management</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Storefront Link & System Info -->
+        <div class="p-4 border-t border-gray-800 space-y-3">
+            <a href="index.html" target="_blank" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white py-2 px-3 rounded-xl border border-gray-700 font-bold text-xs flex items-center justify-center space-x-2 transition">
+                <i class="fa-solid fa-store text-thisshop-500"></i>
+                <span id="lbl-visit-store">Open Main Shop</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+            <div class="text-[10px] text-gray-500 text-center">
+                Connected Storage: <span class="text-emerald-400 font-bold">Active Sync</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar">
+        <!-- Top Bar Header -->
+        <header class="bg-thisshop-dark border-b border-gray-800 p-4 sticky top-0 z-30 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <h1 id="pageTitle" class="text-base font-extrabold text-white">ဒက်ရှ်ဘုတ် အနှစ်ချုပ် (Dashboard Overview)</h1>
+            </div>
+            <div class="flex items-center space-x-3 text-xs">
+                <button onclick="syncAndRefreshAll()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-3 py-1.5 rounded-xl border border-gray-700 font-bold flex items-center space-x-1.5 transition">
+                    <i class="fa-solid fa-rotate text-thisshop-500"></i>
+                    <span id="lbl-sync-btn">Sync Data</span>
+                </button>
+                <div class="flex items-center space-x-2 bg-gray-900 px-3 py-1.5 rounded-xl border border-gray-800">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+                    <span class="text-gray-400 font-semibold text-[11px]" id="lbl-status-online">System Ready</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Body Content View -->
+        <div class="p-4 sm:p-6 space-y-6">
+
+            <!-- SECTION 1: DASHBOARD OVERVIEW -->
+            <div id="view-dashboard" class="space-y-6">
+                <!-- Stat Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Total Revenue Card -->
+                    <div class="bg-thisshop-dark border border-gray-800 p-5 rounded-2xl flex items-center justify-between shadow-lg">
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider" id="lbl-stat-revenue">Total Approved Sales</p>
+                            <h3 id="statTotalRevenue" class="text-xl sm:text-2xl font-black text-emerald-400">0 MMK</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+
+                    <!-- Total Orders Card -->
+                    <div class="bg-thisshop-dark border border-gray-800 p-5 rounded-2xl flex items-center justify-between shadow-lg">
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider" id="lbl-stat-total-orders">Total Orders</p>
+                            <h3 id="statTotalOrders" class="text-xl sm:text-2xl font-black text-white">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-boxes-packing"></i>
+                        </div>
+                    </div>
+
+                    <!-- Pending Approval Card -->
+                    <div class="bg-thisshop-dark border border-gray-800 p-5 rounded-2xl flex items-center justify-between shadow-lg">
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider" id="lbl-stat-pending">Pending Approval</p>
+                            <h3 id="statPendingOrders" class="text-xl sm:text-2xl font-black text-amber-400">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                    </div>
+
+                    <!-- Successful Delivery Card -->
+                    <div class="bg-thisshop-dark border border-gray-800 p-5 rounded-2xl flex items-center justify-between shadow-lg">
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider" id="lbl-stat-delivered">Completed Delivery</p>
+                            <h3 id="statDeliveredOrders" class="text-xl sm:text-2xl font-black text-thisshop-500">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-thisshop-500/10 border border-thisshop-500/20 text-thisshop-500 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Alert Table -->
+                <div class="bg-thisshop-dark border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
+                    <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+                        <h3 class="font-bold text-sm text-white flex items-center">
+                            <i class="fa-solid fa-bell text-amber-400 mr-2"></i>
+                            <span id="lbl-recent-pending-title">Action Required: Recent Pending Orders</span>
+                        </h3>
+                        <button onclick="switchAdminTab('orders')" class="text-xs text-thisshop-500 font-bold hover:underline" id="lbl-view-all">View All Orders →</button>
+                    </div>
+                    <div id="recentPendingContainer" class="p-4 space-y-3">
+                        <!-- Pending Quick Action items rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: ORDERS MANAGEMENT TABLE -->
+            <div id="view-orders" class="hidden space-y-4">
+                <!-- Filters Bar -->
+                <div class="bg-thisshop-dark border border-gray-800 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2 w-full sm:w-auto">
+                        <span class="text-xs font-bold text-gray-400" id="lbl-filter-by">Filter Status:</span>
+                        <select id="orderStatusFilter" onchange="renderOrdersTable()" class="bg-gray-900 border border-gray-700 text-xs font-bold text-gray-200 rounded-xl px-3 py-2 outline-none focus:border-thisshop-600">
+                            <option value="all" id="opt-status-all">All Orders</option>
+                            <option value="Pending Approval" id="opt-status-pending">Pending Approval</option>
+                            <option value="Approved" id="opt-status-approved">Approved / Processing</option>
+                            <option value="Shipped" id="opt-status-shipped">Shipped</option>
+                            <option value="Delivered" id="opt-status-delivered">Delivered</option>
+                            <option value="Rejected" id="opt-status-rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:w-64">
+                        <input type="text" id="orderSearchInput" onkeyup="renderOrdersTable()" placeholder="Search Order ID, Phone..." class="w-full bg-gray-900 border border-gray-700 text-xs text-gray-200 rounded-xl px-3 py-2 outline-none focus:border-thisshop-600">
+                    </div>
+                </div>
+
+                <!-- Orders Master Table -->
+                <div class="bg-thisshop-dark border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs text-gray-300">
+                            <thead class="bg-gray-900/80 uppercase text-[10px] text-gray-400 font-extrabold border-b border-gray-800">
+                                <tr>
+                                    <th class="p-3.5" id="th-order-id">Order ID & Date</th>
+                                    <th class="p-3.5" id="th-customer">Customer Info</th>
+                                    <th class="p-3.5" id="th-items">Ordered Items</th>
+                                    <th class="p-3.5" id="th-amount">Total Payable</th>
+                                    <th class="p-3.5" id="th-payment">Payment Method / TxID</th>
+                                    <th class="p-3.5" id="th-slip">Payment Slip</th>
+                                    <th class="p-3.5" id="th-status">Status</th>
+                                    <th class="p-3.5 text-center" id="th-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody" class="divide-y divide-gray-800 font-medium">
+                                <!-- Dynamic Order Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: PRODUCTS MANAGEMENT -->
+            <div id="view-products" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-base font-bold text-white" id="lbl-prod-mgmt-title">Product Catalog & Stock Management</h2>
+                        <p class="text-xs text-gray-400" id="lbl-prod-mgmt-sub">Add new items or modify catalog prices appearing on the shopfront.</p>
+                    </div>
+                    <button onclick="openAddProductModal()" class="bg-thisshop-600 hover:bg-thisshop-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span id="btn-add-prod">Add New Product</span>
+                    </button>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="adminProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Dynamic Product Cards -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- PAYMENT SLIP VIEW MODAL -->
+    <div id="slipModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-thisshop-dark border border-gray-800 rounded-3xl max-w-lg w-full p-5 space-y-4 shadow-2xl relative">
+            <button onclick="closeSlipModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-sm font-bold text-white flex items-center">
+                <i class="fa-solid fa-file-invoice-dollar text-thisshop-500 mr-2"></i>
+                <span id="lbl-modal-slip-title">Payment Transfer Verification Slip</span>
+            </h3>
+            
+            <div class="bg-black/50 p-3 rounded-2xl border border-gray-800 flex justify-between text-xs">
+                <div>
+                    <p class="text-gray-400" id="lbl-slip-txid">TxID / Ref:</p>
+                    <p id="modalTxId" class="font-mono font-bold text-amber-400 text-sm">--</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-400" id="lbl-slip-method">Method:</p>
+                    <p id="modalPayMethod" class="font-bold text-white">--</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 rounded-2xl border border-gray-800 p-2 flex items-center justify-center max-h-96 overflow-hidden">
+                <img id="slipImagePreview" src="" class="max-h-80 object-contain rounded-xl">
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="approveOrderFromModal()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-2.5 rounded-xl shadow-md transition" id="btn-modal-approve">
+                    <i class="fa-solid fa-check-circle mr-1"></i> Approve Payment
+                </button>
+                <button onclick="rejectOrderFromModal()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-2.5 rounded-xl shadow-md transition" id="btn-modal-reject">
+                    <i class="fa-solid fa-xmark-circle mr-1"></i> Reject Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT PRODUCT MODAL -->
+    <div id="productModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-thisshop-dark border border-gray-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative text-xs">
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-sm font-bold text-white" id="lbl-prod-form-title">Add New Product</h3>
+
+            <form id="productForm" onsubmit="handleSaveProduct(event)" class="space-y-3">
+                <input type="hidden" id="editProductId">
+                <div>
+                    <label class="block font-bold text-gray-400 mb-1" id="lbl-field-prod-en">Title (English) *</label>
+                    <input type="text" id="prodNameEn" required placeholder="iPhone 15 Pro Max..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white outline-none focus:border-thisshop-600">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-400 mb-1" id="lbl-field-prod-my">Title (Burmese) *</label>
+                    <input type="text" id="prodNameMy" required placeholder="iPhone 15 Pro Max တိုက်တေနီယမ်..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white outline-none focus:border-thisshop-600">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-400 mb-1" id="lbl-field-price">Price (MMK) *</label>
+                        <input type="number" id="prodPrice" required placeholder="4200000" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white outline-none focus:border-thisshop-600">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-400 mb-1" id="lbl-field-cat">Category *</label>
+                        <select id="prodCategory" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white outline-none focus:border-thisshop-600">
+                            <option value="electronics">Electronics</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="beauty">Beauty</option>
+                            <option value="appliances">Appliances</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-400 mb-1" id="lbl-field-img">Image URL *</label>
+                    <input type="url" id="prodImgUrl" required placeholder="https://images.unsplash.com/..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white outline-none focus:border-thisshop-600">
+                </div>
+                <button type="submit" class="w-full bg-thisshop-600 hover:bg-thisshop-700 text-white font-extrabold py-3 rounded-xl shadow-lg transition mt-2" id="btn-save-prod">
+                    Save Product to Catalog
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /* Admin i18n Dictionary (Burmese Default) */
+        const adminTranslations = {
+            my: {
+                pageTitleDash: 'ဒက်ရှ်ဘုတ် အနှစ်ချုပ် (Dashboard Overview)',
+                pageTitleOrders: 'မှာယူမှုများနှင့် ငွေပေးချေမှု မန်နေဂျာ (Orders & Payments)',
+                pageTitleProducts: 'ကုန်ပစ္စည်း ကတ်တာလော့ မန်နေဂျာ (Product Catalog)',
+                navDash: 'ဒက်ရှ်ဘုတ် အနှစ်ချုပ်',
+                navOrders: 'မှာယူမှုနှင့် ငွေပေးချေမှု',
+                navProducts: 'ကုန်ပစ္စည်း စီမံခန့်ခွဲမှု',
+                visitStore: 'စတိုးဆိုင်သို့ သွားရန်',
+                syncBtn: 'ဒေတာ အသစ်ယူမည်',
+                statRevenue: 'အတည်ပြုပြီး ရောင်းရငွေ စုစုပေါင်း',
+                statTotalOrders: 'မှာယူမှု စုစုပေါင်း',
+                statPending: 'အတည်ပြုရန် စောင့်ဆိုင်းဆဲ',
+                statDelivered: 'ပို့ဆောင်ပြီး စုစုပေါင်း',
+                recentPendingTitle: 'အရေးကြီး လုပ်ဆောင်ရန်: စောင့်ဆိုင်းဆဲ မှာယူမှုများ',
+                viewAll: 'မှာယူမှု အားလုံးကြည့်မည် →',
+                filterBy: 'အခြေအနေ သီးသန့်ကြည့်မည်:',
+                optStatusAll: 'မှာယူမှု အားလုံး',
+                optStatusPending: 'စောင့်ဆိုင်းဆဲ (Pending)',
+                optStatusApproved: 'အတည်ပြုပြီး / ပြင်ဆင်နေဆဲ',
+                optStatusShipped: 'ပို့ဆောင်နေပြီ (Shipped)',
+                optStatusDelivered: 'ရောက်ရှိပြီး (Delivered)',
+                optStatusRejected: 'ငြင်းပယ်ထားသည် (Rejected)',
+                thOrderId: 'မှာယူမှု ID နှင့် ရက်စွဲ',
+                thCustomer: 'ဝယ်ယူသူ အချက်အလက်',
+                thItems: 'ဝယ်ယူသည့် ပစ္စည်းများ',
+                thAmount: 'ကျသင့်ငွေ',
+                thPayment: 'ငွေပေးချေမှု နည်းလမ်း / TxID',
+                thSlip: 'ငွေလွှဲဖြတ်ပိုင်း',
+                thStatus: 'အခြေအနေ',
+                thActions: 'လုပ်ဆောင်ချက်များ',
+                prodMgmtTitle: 'ကုန်ပစ္စည်းနှင့် စတော့ စီမံခန့်ခွဲမှု',
+                prodMgmtSub: 'စတိုးဆိုင်မျက်နှာစာတွင် ပြသမည့် ပစ္စည်းသစ်များ ထည့်သွင်းခြင်း သို့မဟုတ် စျေးနှုန်း ပြင်ဆင်ခြင်း',
+                btnAddProd: 'ပစ္စည်းသစ် ထည့်မည်',
+                modalSlipTitle: 'ငွေပေးချေမှု စစ်ဆေးခြင်း အထောက်အထား',
+                modalApprove: 'ငွေလွှဲ အတည်ပြုမည်',
+                modalReject: 'မှာယူမှု ငြင်းပယ်မည်',
+                prodFormTitle: 'ကုန်ပစ္စည်းသစ် ထည့်သွင်းရန်',
+                fieldProdEn: 'ပစ္စည်းအမည် (အင်္ဂလိပ်) *',
+                fieldProdMy: 'ပစ္စည်းအမည် (မြန်မာ) *',
+                fieldPrice: 'စျေးနှုန်း (ကျပ်) *',
+                fieldCat: 'အမျိုးအစား *',
+                fieldImg: 'ဓာတ်ပုံ URL *',
+                btnSaveProd: 'ကုန်ပစ္စည်း သိမ်းဆည်းမည်'
+            },
+            en: {
+                pageTitleDash: 'Dashboard Overview Summary',
+                pageTitleOrders: 'Orders & Direct Payments Manager',
+                pageTitleProducts: 'Product Catalog Management',
+                navDash: 'Dashboard Summary',
+                navOrders: 'Orders & Payments',
+                navProducts: 'Products Management',
+                visitStore: 'Open Main Shop',
+                syncBtn: 'Sync Data',
+                statRevenue: 'Total Approved Sales',
+                statTotalOrders: 'Total Orders',
+                statPending: 'Pending Approval',
+                statDelivered: 'Completed Delivery',
+                recentPendingTitle: 'Action Required: Recent Pending Orders',
+                viewAll: 'View All Orders →',
+                filterBy: 'Filter Status:',
+                optStatusAll: 'All Orders',
+                optStatusPending: 'Pending Approval',
+                optStatusApproved: 'Approved / Processing',
+                optStatusShipped: 'Shipped',
+                optStatusDelivered: 'Delivered',
+                optStatusRejected: 'Rejected',
+                thOrderId: 'Order ID & Date',
+                thCustomer: 'Customer Info',
+                thItems: 'Ordered Items',
+                thAmount: 'Total Payable',
+                thPayment: 'Payment Method / TxID',
+                thSlip: 'Payment Slip',
+                thStatus: 'Status',
+                thActions: 'Actions',
+                prodMgmtTitle: 'Product Catalog & Stock Management',
+                prodMgmtSub: 'Add new items or modify catalog prices appearing on the shopfront.',
+                btnAddProd: 'Add New Product',
+                modalSlipTitle: 'Payment Transfer Verification Slip',
+                modalApprove: 'Approve Payment',
+                modalReject: 'Reject Order',
+                prodFormTitle: 'Add New Product',
+                fieldProdEn: 'Title (English) *',
+                fieldProdMy: 'Title (Burmese) *',
+                fieldPrice: 'Price (MMK) *',
+                fieldCat: 'Category *',
+                fieldImg: 'Image URL *',
+                btnSaveProd: 'Save Product to Catalog'
+            }
+        };
+
+        /* State Variables */
+        let adminLang = 'my';
+        let adminOrders = [];
+        let adminProducts = [];
+        let activeSlipOrder = null;
+
+        /* Initial Setup */
+        window.onload = function() {
+            syncAndRefreshAll();
+            applyAdminTranslations();
+        };
+
+        function syncAndRefreshAll() {
+            loadOrdersFromStore();
+            loadProductsFromStore();
+            updateDashboardStats();
+            renderOrdersTable();
+            renderAdminProductsGrid();
+            renderRecentPendingAlerts();
+            showAdminToast(adminLang === 'my' ? 'ဒေတာများ ချိတ်ဆက် အဆင်သင့်ဖြစ်ပါပြီ' : 'Data synchronized!');
+        }
+
+        /* Storage Sync Logic */
+        function loadOrdersFromStore() {
+            const stored = localStorage.getItem('thisshop_orders');
+            adminOrders = stored ? JSON.parse(stored) : [];
+        }
+
+        function saveOrdersToStore() {
+            localStorage.setItem('thisshop_orders', JSON.stringify(adminOrders));
+            updateDashboardStats();
+            renderRecentPendingAlerts();
+        }
+
+        function loadProductsFromStore() {
+            const stored = localStorage.getItem('thisshop_products');
+            if (stored) {
+                adminProducts = JSON.parse(stored);
+            } else {
+                // Fallback initial dataset matching storefront
+                adminProducts = [
+                    { id: 1, nameEn: 'iPhone 15 Pro Max 256GB Direct', nameMy: 'iPhone 15 Pro Max 256GB - တိုက်တေနီယမ်', price: 4200000, category: 'electronics', image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&auto=format&fit=crop&q=80' },
+                    { id: 2, nameEn: 'Sony Wireless Active ANC Headphones', nameMy: 'Sony ကြိုးမဲ့ အသံတိတ် နားကြပ်', price: 950000, category: 'electronics', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=80' },
+                    { id: 3, nameEn: 'Urban Red Streetwear Sneaker', nameMy: 'စတိုင်ကျ သားရေ စနီကာ ဓါတ်ပြားရှူး', price: 280000, category: 'fashion', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=80' },
+                    { id: 4, nameEn: 'Hydrating Glow Facial Serum 50ml', nameMy: 'မျက်နှာအစိုဓာတ်ထိန်း စီရမ်', price: 120000, category: 'beauty', image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop&q=80' }
+                ];
+                localStorage.setItem('thisshop_products', JSON.stringify(adminProducts));
+            }
+        }
+
+        function saveProductsToStore() {
+            localStorage.setItem('thisshop_products', JSON.stringify(adminProducts));
+            renderAdminProductsGrid();
+        }
+
+        /* Language Toggle Logic */
+        function toggleAdminLang() {
+            adminLang = adminLang === 'my' ? 'en' : 'my';
+            document.getElementById('adminLangLabel').textContent = adminLang === 'my' ? 'မြန်မာ' : 'English';
+            applyAdminTranslations();
+            renderOrdersTable();
+            renderAdminProductsGrid();
+            renderRecentPendingAlerts();
+        }
+
+        function applyAdminTranslations() {
+            const t = adminTranslations[adminLang];
+            document.getElementById('lbl-nav-dash').textContent = t.navDash;
+            document.getElementById('lbl-nav-orders').textContent = t.navOrders;
+            document.getElementById('lbl-nav-products').textContent = t.navProducts;
+            document.getElementById('lbl-visit-store').textContent = t.visitStore;
+            document.getElementById('lbl-sync-btn').textContent = t.syncBtn;
+            document.getElementById('lbl-stat-revenue').textContent = t.statRevenue;
+            document.getElementById('lbl-stat-total-orders').textContent = t.statTotalOrders;
+            document.getElementById('lbl-stat-pending').textContent = t.statPending;
+            document.getElementById('lbl-stat-delivered').textContent = t.statDelivered;
+            document.getElementById('lbl-recent-pending-title').textContent = t.recentPendingTitle;
+            document.getElementById('lbl-view-all').textContent = t.viewAll;
+            document.getElementById('lbl-filter-by').textContent = t.filterBy;
+            document.getElementById('opt-status-all').textContent = t.optStatusAll;
+            document.getElementById('opt-status-pending').textContent = t.optStatusPending;
+            document.getElementById('opt-status-approved').textContent = t.optStatusApproved;
+            document.getElementById('opt-status-shipped').textContent = t.optStatusShipped;
+            document.getElementById('opt-status-delivered').textContent = t.optStatusDelivered;
+            document.getElementById('opt-status-rejected').textContent = t.optStatusRejected;
+            document.getElementById('th-order-id').textContent = t.thOrderId;
+            document.getElementById('th-customer').textContent = t.thCustomer;
+            document.getElementById('th-items').textContent = t.thItems;
+            document.getElementById('th-amount').textContent = t.thAmount;
+            document.getElementById('th-payment').textContent = t.thPayment;
+            document.getElementById('th-slip').textContent = t.thSlip;
+            document.getElementById('th-status').textContent = t.thStatus;
+            document.getElementById('th-actions').textContent = t.thActions;
+            document.getElementById('lbl-prod-mgmt-title').textContent = t.prodMgmtTitle;
+            document.getElementById('lbl-prod-mgmt-sub').textContent = t.prodMgmtSub;
+            document.getElementById('btn-add-prod').textContent = t.btnAddProd;
+            document.getElementById('lbl-modal-slip-title').textContent = t.modalSlipTitle;
+            document.getElementById('btn-modal-approve').textContent = t.modalApprove;
+            document.getElementById('btn-modal-reject').textContent = t.modalReject;
+            document.getElementById('lbl-prod-form-title').textContent = t.prodFormTitle;
+            document.getElementById('lbl-field-prod-en').textContent = t.fieldProdEn;
+            document.getElementById('lbl-field-prod-my').textContent = t.fieldProdMy;
+            document.getElementById('lbl-field-price').textContent = t.fieldPrice;
+            document.getElementById('lbl-field-cat').textContent = t.fieldCat;
+            document.getElementById('lbl-field-img').textContent = t.fieldImg;
+            document.getElementById('btn-save-prod').textContent = t.btnSaveProd;
+        }
+
+        /* Navigation Switcher */
+        function switchAdminTab(view) {
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-orders').classList.add('hidden');
+            document.getElementById('view-products').classList.add('hidden');
+
+            document.getElementById('nav-dash').className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition";
+            document.getElementById('nav-orders').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition";
+            document.getElementById('nav-products').className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition";
+
+            const t = adminTranslations[adminLang];
+
+            if (view === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.getElementById('nav-dash').className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-thisshop-600 text-white shadow-md transition";
+                document.getElementById('pageTitle').textContent = t.pageTitleDash;
+            } else if (view === 'orders') {
+                document.getElementById('view-orders').classList.remove('hidden');
+                document.getElementById('nav-orders').className = "w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-thisshop-600 text-white shadow-md transition";
+                document.getElementById('pageTitle').textContent = t.pageTitleOrders;
+            } else if (view === 'products') {
+                document.getElementById('view-products').classList.remove('hidden');
+                document.getElementById('nav-products').className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-thisshop-600 text-white shadow-md transition";
+                document.getElementById('pageTitle').textContent = t.pageTitleProducts;
+            }
+        }
+
+        /* Dashboard Overview Calculations */
+        function updateDashboardStats() {
+            const approvedOrders = adminOrders.filter(o => o.status === 'Approved' || o.status === 'Processing' || o.status === 'Shipped' || o.status === 'Delivered');
+            const totalRev = approvedOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            const pendingCount = adminOrders.filter(o => o.status === 'Pending Approval').length;
+            const deliveredCount = adminOrders.filter(o => o.status === 'Delivered').length;
+
+            document.getElementById('statTotalRevenue').textContent = `${totalRev.toLocaleString()} MMK`;
+            document.getElementById('statTotalOrders').textContent = adminOrders.length;
+            document.getElementById('statPendingOrders').textContent = pendingCount;
+            document.getElementById('statDeliveredOrders').textContent = deliveredCount;
+
+            document.getElementById('pendingBadge').textContent = pendingCount;
+        }
+
+        function renderRecentPendingAlerts() {
+            const container = document.getElementById('recentPendingContainer');
+            container.innerHTML = '';
+
+            const pendingList = adminOrders.filter(o => o.status === 'Pending Approval').slice(0, 5);
+
+            if (pendingList.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-gray-500 text-xs">မဆိုင်းငံ့ထားသော အော်ဒါများမရှိပါ။ (No pending orders needing approval)</div>`;
+                return;
+            }
+
+            pendingList.forEach(ord => {
+                const div = document.createElement('div');
+                div.className = "bg-gray-900 border border-gray-800 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs";
+                div.innerHTML = `
+                    <div class="space-y-0.5">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-extrabold text-white">${ord.id}</span>
+                            <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold">${ord.paymentMethod}</span>
+                        </div>
+                        <p class="text-gray-400 text-[11px]">${ord.customer.name} (${ord.customer.phone})</p>
+                    </div>
+                    <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-0 pt-2 sm:pt-0">
+                        <span class="font-black text-emerald-400">${ord.total.toLocaleString()} MMK</span>
+                        <div class="flex space-x-1">
+                            <button onclick="approveOrder('${ord.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition">
+                                Approve
+                            </button>
+                            <button onclick="rejectOrder('${ord.id}')" class="bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition">
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        /* Orders Master Table Render */
+        function renderOrdersTable() {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '';
+
+            const filterStatus = document.getElementById('orderStatusFilter').value;
+            const query = document.getElementById('orderSearchInput').value.toLowerCase();
+
+            let filtered = adminOrders;
+
+            if (filterStatus !== 'all') {
+                if (filterStatus === 'Approved') {
+                    filtered = filtered.filter(o => o.status === 'Approved' || o.status === 'Processing');
+                } else {
+                    filtered = filtered.filter(o => o.status === filterStatus);
+                }
+            }
+
+            if (query) {
+                filtered = filtered.filter(o => 
+                    o.id.toLowerCase().includes(query) || 
+                    o.customer.name.toLowerCase().includes(query) || 
+                    o.customer.phone.includes(query) ||
+                    o.txId.toLowerCase().includes(query)
+                );
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-500">မရှိသေးပါ။ (No matching orders found)</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(ord => {
+                let badgeClass = "bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                if (ord.status === 'Approved' || ord.status === 'Processing') badgeClass = "bg-blue-500/20 text-blue-400 border border-blue-500/30";
+                if (ord.status === 'Shipped') badgeClass = "bg-purple-500/20 text-purple-400 border border-purple-500/30";
+                if (ord.status === 'Delivered') badgeClass = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                if (ord.status === 'Rejected') badgeClass = "bg-red-500/20 text-red-400 border border-red-500/30";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-900/60 transition";
+                tr.innerHTML = `
+                    <td class="p-3.5">
+                        <div class="font-extrabold text-white">${ord.id}</div>
+                        <div class="text-[10px] text-gray-500">${ord.date}</div>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-bold text-gray-200">${ord.customer.name}</div>
+                        <div class="text-[11px] text-thisshop-500 font-mono">${ord.customer.phone}</div>
+                        <div class="text-[10px] text-gray-400 truncate max-w-[140px]">${ord.customer.address}</div>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="text-[11px] space-y-0.5 text-gray-300">
+                            ${ord.items.map(i => `<div>• ${i.name} <span class="text-gray-500">(x${i.qty})</span></div>`).join('')}
+                        </div>
+                    </td>
+                    <td class="p-3.5 font-black text-emerald-400">
+                        ${ord.total.toLocaleString()} MMK
+                    </td>
+                    <td class="p-3.5">
+                        <span class="font-bold text-gray-200">${ord.paymentMethod}</span>
+                        <div class="text-[10px] font-mono text-amber-400">TxID: ${ord.txId}</div>
+                    </td>
+                    <td class="p-3.5">
+                        <button onclick="openSlipModal('${ord.id}')" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center space-x-1">
+                            <i class="fa-solid fa-eye text-thisshop-500"></i>
+                            <span>View Slip</span>
+                        </button>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badgeClass}">
+                            ${ord.status}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <div class="flex items-center justify-center space-x-1">
+                            ${ord.status === 'Pending Approval' ? `
+                                <button onclick="approveOrder('${ord.id}')" title="Approve Payment" class="bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded-lg text-xs transition">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button onclick="rejectOrder('${ord.id}')" title="Reject Order" class="bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-lg text-xs transition">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            ` : ''}
+
+                            ${ord.status !== 'Rejected' ? `
+                                <select onchange="updateShippingStatus('${ord.id}', this.value)" class="bg-gray-900 border border-gray-700 text-[10px] font-bold text-gray-300 rounded-lg p-1 outline-none">
+                                    <option value="" disabled selected>Update Status</option>
+                                    <option value="Processing">Processing</option>
+                                    <option value="Shipped">Shipped</option>
+                                    <option value="Delivered">Delivered</option>
+                                </select>
+                            ` : ''}
+
+                            <button onclick="deleteOrder('${ord.id}')" title="Delete Order Record" class="text-gray-500 hover:text-red-400 p-1.5 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* Order Actions: Approve / Reject / Shipping */
+        function approveOrder(orderId) {
+            const ord = adminOrders.find(o => o.id === orderId);
+            if (ord) {
+                ord.status = 'Approved';
+                saveOrdersToStore();
+                renderOrdersTable();
+                showAdminToast(adminLang === 'my' ? `အော်ဒါ ${orderId} ကို အတည်ပြုလိုက်ပါပြီ` : `Order ${orderId} Approved!`);
+            }
+        }
+
+        function rejectOrder(orderId) {
+            const ord = adminOrders.find(o => o.id === orderId);
+            if (ord) {
+                ord.status = 'Rejected';
+                saveOrdersToStore();
+                renderOrdersTable();
+                showAdminToast(adminLang === 'my' ? `အော်ဒါ ${orderId} ကို ငြင်းပယ်လိုက်ပါပြီ` : `Order ${orderId} Rejected.`);
+            }
+        }
+
+        function updateShippingStatus(orderId, newStatus) {
+            if (!newStatus) return;
+            const ord = adminOrders.find(o => o.id === orderId);
+            if (ord) {
+                ord.status = newStatus;
+                saveOrdersToStore();
+                renderOrdersTable();
+                showAdminToast(adminLang === 'my' ? `ပို့ဆောင်ရေး အခြေအနေ ${newStatus} သို့ ပြောင်းလဲပြီးပါပြီ` : `Shipping status updated to ${newStatus}`);
+            }
+        }
+
+        function deleteOrder(orderId) {
+            if (confirm(adminLang === 'my' ? 'ဤအော်ဒါမှတ်တမ်းကို ฟျက်ရန် သေချာပါသလား?' : 'Delete this order record permanently?')) {
+                adminOrders = adminOrders.filter(o => o.id !== orderId);
+                saveOrdersToStore();
+                renderOrdersTable();
+                showAdminToast('Order deleted.');
+            }
+        }
+
+        /* Slip Verification Modal Operations */
+        function openSlipModal(orderId) {
+            activeSlipOrder = adminOrders.find(o => o.id === orderId);
+            if (!activeSlipOrder) return;
+
+            document.getElementById('modalTxId').textContent = activeSlipOrder.txId;
+            document.getElementById('modalPayMethod').textContent = activeSlipOrder.paymentMethod;
+            
+            // Representative placeholder or scan photo
+            document.getElementById('slipImagePreview').src = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&auto=format&fit=crop&q=80";
+            document.getElementById('slipModal').classList.remove('hidden');
+        }
+
+        function closeSlipModal() {
+            document.getElementById('slipModal').classList.add('hidden');
+            activeSlipOrder = null;
+        }
+
+        function approveOrderFromModal() {
+            if (activeSlipOrder) {
+                approveOrder(activeSlipOrder.id);
+                closeSlipModal();
+            }
+        }
+
+        function rejectOrderFromModal() {
+            if (activeSlipOrder) {
+                rejectOrder(activeSlipOrder.id);
+                closeSlipModal();
+            }
+        }
+
+        /* Product Management Logic */
+        function renderAdminProductsGrid() {
+            const grid = document.getElementById('adminProductsGrid');
+            grid.innerHTML = '';
+
+            adminProducts.forEach(p => {
+                const title = adminLang === 'my' ? p.nameMy : p.nameEn;
+                const card = document.createElement('div');
+                card.className = "bg-thisshop-dark border border-gray-800 rounded-2xl p-3 flex flex-col justify-between space-y-3 shadow-lg";
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="h-32 bg-gray-900 rounded-xl overflow-hidden relative">
+                            <img src="${p.image}" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 bg-gray-900/80 backdrop-blur-md text-gray-300 text-[9px] font-bold px-2 py-0.5 rounded uppercase">${p.category}</span>
+                        </div>
+                        <h4 class="font-bold text-white text-xs line-clamp-2 h-8 leading-snug">${title}</h4>
+                        <p class="text-thisshop-500 font-black text-sm">${p.price.toLocaleString()} MMK</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-800">
+                        <button onclick="openEditProductModal(${p.id})" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-1.5 rounded-lg border border-gray-700 transition">
+                            Edit
+                        </button>
+                        <button onclick="deleteProduct(${p.id})" class="bg-red-950/60 hover:bg-red-900 text-red-400 text-xs font-bold py-1.5 rounded-lg border border-red-800/50 transition">
+                            Delete
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openAddProductModal() {
+            document.getElementById('editProductId').value = '';
+            document.getElementById('productForm').reset();
+            document.getElementById('lbl-prod-form-title').textContent = adminTranslations[adminLang].prodFormTitle;
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function openEditProductModal(id) {
+            const p = adminProducts.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('editProductId').value = p.id;
+            document.getElementById('prodNameEn').value = p.nameEn;
+            document.getElementById('prodNameMy').value = p.nameMy;
+            document.getElementById('prodPrice').value = p.price;
+            document.getElementById('prodCategory').value = p.category;
+            document.getElementById('prodImgUrl').value = p.image;
+
+            document.getElementById('lbl-prod-form-title').textContent = adminLang === 'my' ? 'ကုန်ပစ္စည်း ပြင်ဆင်ရန်' : 'Edit Product';
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        function handleSaveProduct(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editProductId').value;
+            const nameEn = document.getElementById('prodNameEn').value.trim();
+            const nameMy = document.getElementById('prodNameMy').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const category = document.getElementById('prodCategory').value;
+            const image = document.getElementById('prodImgUrl').value.trim();
+
+            if (editId) {
+                const item = adminProducts.find(p => p.id == editId);
+                if (item) {
+                    item.nameEn = nameEn;
+                    item.nameMy = nameMy;
+                    item.price = price;
+                    item.category = category;
+                    item.image = image;
+                }
+            } else {
+                const newProd = {
+                    id: Date.now(),
+                    nameEn,
+                    nameMy,
+                    price,
+                    category,
+                    image
+                };
+                adminProducts.push(newProd);
+            }
+
+            saveProductsToStore();
+            closeProductModal();
+            showAdminToast(adminLang === 'my' ? 'ကုန်ပစ္စည်း ကတ်တာလော့ သိမ်းဆည်းပြီးပါပြီ' : 'Product saved to catalog!');
+        }
+
+        function deleteProduct(id) {
+            if (confirm(adminLang === 'my' ? 'ဤကုန်ပစ္စည်းကို ဖျက်ရန် သေချာပါသလား?' : 'Delete this product from catalog?')) {
+                adminProducts = adminProducts.filter(p => p.id !== id);
+                saveProductsToStore();
+                showAdminToast('Product deleted.');
+            }
+        }
+
+        /* UI Notification Toast */
+        function showAdminToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-6 right-6 bg-thisshop-600 text-white px-4 py-2.5 rounded-xl shadow-2xl z-50 text-xs font-bold flex items-center space-x-2 transition transform animate-bounce";
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-white"></i> <span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
