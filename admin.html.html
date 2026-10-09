@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thisshop Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { thisshop: { red: '#FF4D4F', darkred: '#D9363E', dark: '#1F1F1F' } },
+          fontFamily: { sans: ['Poppins', 'Padauk', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-thisshop-dark text-white flex flex-col justify-between hidden md:flex">
+    <div>
+      <div class="p-5 border-b border-gray-800 flex items-center space-x-2">
+        <span class="text-xl font-black text-thisshop-red tracking-wider">THISSHOP</span>
+        <span class="bg-thisshop-red text-white text-[9px] font-bold px-1.5 py-0.5 rounded">ADMIN</span>
+      </div>
+      <nav class="p-4 space-y-1 text-sm">
+        <button onclick="switchTab('orders')" id="nav-orders" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-thisshop-red text-white font-medium">
+          <i class="fa-solid fa-receipt w-5"></i>
+          <span>အော်ဒါနှင့် စလစ်စစ်ဆေးရန် (Orders)</span>
+        </button>
+        <button onclick="switchTab('users')" id="nav-users" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          <i class="fa-solid fa-users w-5"></i>
+          <span>သုံးစွဲသူများ (User Credentials)</span>
+        </button>
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          <i class="fa-solid fa-chart-line w-5"></i>
+          <span>အရောင်းစာရင်း (Sales Analytics)</span>
+        </button>
+        <button onclick="switchTab('products')" id="nav-products" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          <i class="fa-solid fa-boxes-stacked w-5"></i>
+          <span>ကုန်ပစ္စည်းစီမံရန် (Products)</span>
+        </button>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-y-auto">
+
+    <header class="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-30">
+      <h1 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+        <i class="fa-solid fa-gauge text-thisshop-red"></i>
+        <span>အော်ဒါနှင့် စလစ်စစ်ဆေးရန် (Orders & Payment Slips)</span>
+      </h1>
+      <button onclick="refreshData()" class="text-xs bg-thisshop-red/10 text-thisshop-red hover:bg-thisshop-red hover:text-white px-3 py-1.5 rounded-lg font-bold transition">
+        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Data
+      </button>
+    </header>
+
+    <div class="p-6 space-y-6">
+
+      <!-- ORDERS TAB -->
+      <section id="tab-content-orders" class="space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm flex space-x-2">
+          <button onclick="filterOrders('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200">အားလုံး (All)</button>
+          <button onclick="filterOrders('pending')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-yellow-100 text-yellow-800">စလစ်စစ်ရန် (Pending)</button>
+          <button onclick="filterOrders('approved')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-800">အတည်ပြုပြီး (Approved)</button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-gray-50 border-b font-bold text-gray-600">
+              <tr>
+                <th class="p-3">Order ID</th>
+                <th class="p-3">ဝယ်ယူသူ (Customer)</th>
+                <th class="p-3">စလစ်ပုံ (Real Slip)</th>
+                <th class="p-3">Ref ID / Payment</th>
+                <th class="p-3">ยอดรวม (Total)</th>
+                <th class="p-3">အခြေအနေ (Status)</th>
+                <th class="p-3 text-right">လုပ်ဆောင်ချက် (Actions)</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-orders-body" class="divide-y"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- USERS TAB (EDIT CUSTOMER CREDENTIALS) -->
+      <section id="tab-content-users" class="hidden space-y-4">
+        <div class="bg-white rounded-xl shadow-sm border p-4 space-y-4">
+          <h3 class="font-bold text-sm">သုံးစွဲသူများ အကောင့်အချက်အလက် စီမံရန် (Manage User Credentials)</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-gray-50 border-b font-bold text-gray-600">
+                <tr>
+                  <th class="p-3">User ID</th>
+                  <th class="p-3">အမည် (Name)</th>
+                  <th class="p-3">ဖုန်းနံပါတ် (Phone)</th>
+                  <th class="p-3">အီးမေးလ် (Email)</th>
+                  <th class="p-3">လျှို့ဝှက်နံပါတ် (Password)</th>
+                  <th class="p-3 text-right">ပြင်ဆင်ရန် (Actions)</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-users-body" class="divide-y"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS TAB -->
+      <section id="tab-content-analytics" class="hidden space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-xl border shadow-sm">
+            <p class="text-xs text-gray-500 font-bold">ယနေ့ အရောင်းရဆုံး ยอด</p>
+            <p id="analytics-today" class="text-2xl font-black text-thisshop-red font-mono">0 MMK</p>
+          </div>
+          <div class="bg-white p-5 rounded-xl border shadow-sm">
+            <p class="text-xs text-gray-500 font-bold">စုစုပေါင်း အရောင်းရဆုံး ยอด</p>
+            <p id="analytics-month" class="text-2xl font-black text-blue-600 font-mono">0 MMK</p>
+          </div>
+          <div class="bg-white p-5 rounded-xl border shadow-sm">
+            <p class="text-xs text-gray-500 font-bold">စုစုပေါင်း အော်ဒါအရင်း</p>
+            <p id="analytics-count" class="text-2xl font-black text-gray-800 font-mono">0</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS TAB (ADD / DELETE) -->
+      <section id="tab-content-products" class="hidden space-y-4">
+        <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+          <h3 class="font-bold text-sm">ကုန်ပစ္စည်းများ စာရင်း (Product Catalog)</h3>
+          <button onclick="openAddProductModal()" class="bg-thisshop-red text-white px-4 py-2 rounded-lg text-xs font-bold">
+            <i class="fa-solid fa-plus mr-1"></i> ပစ္စည်းသစ်ထည့်ရန် (Add Product)
+          </button>
+        </div>
+        <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- REAL SLIP INSPECTION MODAL -->
+  <div id="modal-slip-inspect" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative">
+      <button onclick="closeSlipInspectModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <h3 class="font-bold text-base text-gray-800 border-b pb-2">ငွေလွှဲပြေစာ စစ်ဆေးရန် (Payment Slip Verification)</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-black/5 rounded-xl p-2 flex items-center justify-center h-80 overflow-hidden">
+          <a id="inspect-slip-link" href="#" target="_blank">
+            <img id="inspect-slip-img" class="max-h-full max-w-full object-contain rounded hover:scale-105 transition">
+          </a>
+        </div>
+
+        <div class="space-y-3 text-xs flex flex-col justify-between">
+          <div class="space-y-2">
+            <div class="p-2.5 bg-gray-50 rounded-lg">
+              <span class="text-gray-400 block text-[10px]">Order ID & Ref ID:</span>
+              <p class="font-bold text-thisshop-red font-mono" id="inspect-order-id">-</p>
+              <p class="font-bold font-mono text-gray-700" id="inspect-ref-id">-</p>
+            </div>
+            <div class="p-2.5 bg-gray-50 rounded-lg">
+              <span class="text-gray-400 block text-[10px]">ဝယ်ယူသူ (Customer):</span>
+              <p class="font-bold" id="inspect-customer-name">-</p>
+              <p class="text-gray-600" id="inspect-customer-phone">-</p>
+            </div>
+            <div class="p-2.5 bg-gray-50 rounded-lg">
+              <span class="text-gray-400 block text-[10px]">ပေးချေသည့် ပမာဏ:</span>
+              <p class="font-black text-lg text-thisshop-red font-mono" id="inspect-amount">0 MMK</p>
+            </div>
+          </div>
+
+          <div class="space-y-2 pt-2 border-t">
+            <label class="block font-bold">Tracking Number ရိုက်ထည့်ပါ:</label>
+            <input type="text" id="inspect-tracking-input" placeholder="e.g. KET12345678" class="w-full border px-3 py-2 rounded-lg text-xs">
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+              <button onclick="updateOrderStatusFromInspect('approved')" class="bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700">
+                အတည်ပြုမည် (Approve)
+              </button>
+              <button onclick="updateOrderStatusFromInspect('rejected')" class="bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700">
+                ငြင်းပယ်မည် (Reject)
+              </button>
+            </div>
+            <button onclick="updateOrderStatusFromInspect('shipping')" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">
+              ပို့ဆောင်မည် (Set Shipping & Tracking)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD PRODUCT MODAL -->
+  <div id="modal-add-product" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+      <button onclick="closeAddProductModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <h3 class="font-bold text-base border-b pb-2">ကုန်ပစ္စည်းသစ်ထည့်ရန် (Add New Product)</h3>
+
+      <form onsubmit="saveNewProduct(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">အမည် (MM)</label>
+          <input type="text" id="prod-name-my" required class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Name (EN)</label>
+          <input type="text" id="prod-name-en" required class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">หมวดหมู่ (Category)</label>
+          <select id="prod-category" class="w-full border px-3 py-2 rounded-lg">
+            <option value="electronics">IT & Gadgets</option>
+            <option value="fashion">Fashion & Beauty</option>
+            <option value="appliances">Home Appliances</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">ราคา (MMK)</label>
+          <input type="number" id="prod-price" required class="w-full border px-3 py-2 rounded-lg font-mono">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Image URL</label>
+          <input type="url" id="prod-img" required placeholder="https://..." class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <button type="submit" class="w-full bg-thisshop-red text-white py-2.5 rounded-xl font-bold text-sm">
+          သိမ်းဆည်းမည် (Save Product)
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT CUSTOMER CREDENTIALS MODAL -->
+  <div id="modal-edit-user" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+      <button onclick="closeEditUserModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <h3 class="font-bold text-base border-b pb-2">သုံးစွဲသူ အကောင့်ပြင်ဆင်ရန် (Edit User Credentials)</h3>
+
+      <form id="form-edit-user" onsubmit="saveUserChanges(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="edit-user-original-id">
+        <div>
+          <label class="block font-bold mb-1">User ID</label>
+          <input type="text" id="edit-user-id" required class="w-full border px-3 py-2 rounded-lg font-mono">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">အမည် (Name)</label>
+          <input type="text" id="edit-user-name" required class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">ဖုန်းနံပါတ် (Phone Login)</label>
+          <input type="text" id="edit-user-phone" required class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">အီးမေးလ် (Email Login)</label>
+          <input type="email" id="edit-user-email" required class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">လျှို့ဝှက်နံပါတ် (Password)</label>
+          <input type="text" id="edit-user-password" required class="w-full border px-3 py-2 rounded-lg font-mono">
+        </div>
+        <button type="submit" class="w-full bg-thisshop-red text-white py-2.5 rounded-xl font-bold text-sm">
+          သိမ်းဆည်းမည် (Save Changes)
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let activeInspectOrderId = null;
+
+    window.onload = function() {
+      refreshData();
+    };
+
+    function refreshData() {
+      renderOrdersTable();
+      renderUsersTable();
+      renderAnalytics();
+      renderAdminProducts();
+    }
+
+    function switchTab(tab) {
+      ['orders', 'users', 'analytics', 'products'].forEach(t => {
+        document.getElementById(`tab-content-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition';
+      });
+      document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
+      document.getElementById(`nav-${tab}`).className = 'w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-thisshop-red text-white font-medium';
+    }
+
+    function renderOrdersTable(filter = 'all') {
+      const orders = JSON.parse(localStorage.getItem('thisshop_orders')) || [];
+      const tbody = document.getElementById('tbl-orders-body');
+
+      let filtered = orders;
+      if (filter !== 'all') filtered = orders.filter(o => o.status === filter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">အော်ဒါစာရင်း မရှိသေးပါ။</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(o => `
+        <tr class="hover:bg-gray-50 transition">
+          <td class="p-3 font-mono font-bold text-thisshop-red">${o.orderId}</td>
+          <td class="p-3">
+            <p class="font-bold">${o.userName}</p>
+            <p class="text-gray-400 text-[10px]">${o.userPhone}</p>
+          </td>
+          <td class="p-3">
+            <button onclick="openSlipInspectModal('${o.orderId}')" class="relative group">
+              <img src="${o.slipImg}" class="w-10 h-10 object-cover rounded border border-gray-200">
+              <span class="absolute inset-0 bg-black/30 text-white text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 rounded">ကြည့်မည်</span>
+            </button>
+          </td>
+          <td class="p-3">
+            <p class="font-mono font-bold">${o.refId}</p>
+            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-gray-100">${o.paymentMethod}</span>
+          </td>
+          <td class="p-3 font-mono font-bold text-gray-800">${o.totalAmount.toLocaleString()} MMK</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusClass(o.status)}">${o.status.toUpperCase()}</span>
+          </td>
+          <td class="p-3 text-right">
+            <button onclick="openSlipInspectModal('${o.orderId}')" class="bg-gray-100 hover:bg-thisshop-red hover:text-white px-3 py-1 rounded text-[11px] font-bold transition">
+              စစ်ဆေးမည်
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function getStatusClass(status) {
+      switch (status) {
+        case 'pending': return 'bg-yellow-100 text-yellow-800';
+        case 'approved': return 'bg-blue-100 text-blue-800';
+        case 'shipping': return 'bg-indigo-100 text-indigo-800';
+        case 'delivered': return 'bg-green-100 text-green-800';
+        case 'rejected': return 'bg-red-100 text-red-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    function openSlipInspectModal(orderId) {
+      const orders = JSON.parse(localStorage.getItem('thisshop_orders')) || [];
+      const order = orders.find(o => o.orderId === orderId);
+      if (!order) return;
+
+      activeInspectOrderId = orderId;
+      document.getElementById('inspect-slip-img').src = order.slipImg;
+      document.getElementById('inspect-slip-link').href = order.slipImg;
+      document.getElementById('inspect-order-id').innerText = order.orderId;
+      document.getElementById('inspect-ref-id').innerText = `Ref: ${order.refId} (${order.paymentMethod.toUpperCase()})`;
+      document.getElementById('inspect-customer-name').innerText = order.userName;
+      document.getElementById('inspect-customer-phone').innerText = `Phone: ${order.userPhone} | UserID: ${order.userId}`;
+      document.getElementById('inspect-amount').innerText = `${order.totalAmount.toLocaleString()} MMK`;
+      document.getElementById('inspect-tracking-input').value = order.trackingNo || '';
+
+      document.getElementById('modal-slip-inspect').classList.remove('hidden');
+    }
+
+    function closeSlipInspectModal() { document.getElementById('modal-slip-inspect').classList.add('hidden'); }
+
+    function updateOrderStatusFromInspect(status) {
+      if (!activeInspectOrderId) return;
+      const orders = JSON.parse(localStorage.getItem('thisshop_orders')) || [];
+      const order = orders.find(o => o.orderId === activeInspectOrderId);
+      if (!order) return;
+
+      order.status = status;
+      if (status === 'shipping' || status === 'delivered') {
+        const track = document.getElementById('inspect-tracking-input').value.trim();
+        if (track) order.trackingNo = track;
+      }
+
+      localStorage.setItem('thisshop_orders', JSON.stringify(orders));
+      alert(`အော်ဒါအခြေအနေကို ${status.toUpperCase()} သို့ ပြောင်းလဲပြီးပါပြီ`);
+      closeSlipInspectModal();
+      refreshData();
+    }
+
+    function renderUsersTable() {
+      const users = JSON.parse(localStorage.getItem('thisshop_users')) || [];
+      const tbody = document.getElementById('tbl-users-body');
+
+      if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">သုံးစွဲသူ အကောင့်မရှိသေးပါ။</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => `
+        <tr class="hover:bg-gray-50">
+          <td class="p-3 font-mono font-bold text-thisshop-red">${u.userId}</td>
+          <td class="p-3 font-bold">${u.name}</td>
+          <td class="p-3 font-mono">${u.phone}</td>
+          <td class="p-3">${u.email}</td>
+          <td class="p-3 font-mono bg-gray-100 rounded px-2 py-0.5">${u.password}</td>
+          <td class="p-3 text-right">
+            <button onclick="openEditUserModal('${u.userId}')" class="text-blue-600 hover:underline font-bold">
+              ပြင်ဆင်ရန် (Edit)
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditUserModal(userId) {
+      const users = JSON.parse(localStorage.getItem('thisshop_users')) || [];
+      const user = users.find(u => u.userId === userId);
+      if (!user) return;
+
+      document.getElementById('edit-user-original-id').value = user.userId;
+      document.getElementById('edit-user-id').value = user.userId;
+      document.getElementById('edit-user-name').value = user.name;
+      document.getElementById('edit-user-phone').value = user.phone;
+      document.getElementById('edit-user-email').value = user.email;
+      document.getElementById('edit-user-password').value = user.password;
+
+      document.getElementById('modal-edit-user').classList.remove('hidden');
+    }
+
+    function closeEditUserModal() { document.getElementById('modal-edit-user').classList.add('hidden'); }
+
+    function saveUserChanges(e) {
+      e.preventDefault();
+      const origId = document.getElementById('edit-user-original-id').value;
+      const users = JSON.parse(localStorage.getItem('thisshop_users')) || [];
+      const user = users.find(u => u.userId === origId);
+
+      if (!user) return;
+
+      user.userId = document.getElementById('edit-user-id').value.trim();
+      user.name = document.getElementById('edit-user-name').value.trim();
+      user.phone = document.getElementById('edit-user-phone').value.trim();
+      user.email = document.getElementById('edit-user-email').value.trim();
+      user.password = document.getElementById('edit-user-password').value;
+
+      localStorage.setItem('thisshop_users', JSON.stringify(users));
+      alert('သုံးစွဲသူ အချက်အလက် ပြင်ဆင်ပြီးပါပြီ');
+      closeEditUserModal();
+      refreshData();
+    }
+
+    function openAddProductModal() {
+      document.getElementById('modal-add-product').classList.remove('hidden');
+    }
+    function closeAddProductModal() {
+      document.getElementById('modal-add-product').classList.add('hidden');
+    }
+
+    function saveNewProduct(e) {
+      e.preventDefault();
+      const name_my = document.getElementById('prod-name-my').value;
+      const name_en = document.getElementById('prod-name-en').value;
+      const category = document.getElementById('prod-category').value;
+      const price = parseFloat(document.getElementById('prod-price').value);
+      const img = document.getElementById('prod-img').value;
+
+      const products = JSON.parse(localStorage.getItem('thisshop_products')) || [];
+      products.push({
+        id: 'P' + Math.floor(100 + Math.random() * 900),
+        category, name_my, name_en, price, img
+      });
+
+      localStorage.setItem('thisshop_products', JSON.stringify(products));
+      alert('ထည့်သွင်းပြီးပါပြီ (Product Added)');
+      closeAddProductModal();
+      refreshData();
+    }
+
+    function deleteProduct(id) {
+      if (confirm('ကုန်ပစ္စည်းကို ဖျက်မှာ သေချာပါသလား?')) {
+        let products = JSON.parse(localStorage.getItem('thisshop_products')) || [];
+        products = products.filter(p => p.id !== id);
+        localStorage.setItem('thisshop_products', JSON.stringify(products));
+        refreshData();
+      }
+    }
+
+    function renderAnalytics() {
+      const orders = JSON.parse(localStorage.getItem('thisshop_orders')) || [];
+      const approvedOrders = orders.filter(o => o.status !== 'rejected');
+      const totalRev = approvedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+
+      document.getElementById('analytics-today').innerText = totalRev.toLocaleString() + ' MMK';
+      document.getElementById('analytics-month').innerText = totalRev.toLocaleString() + ' MMK';
+      document.getElementById('analytics-count').innerText = orders.length;
+    }
+
+    function renderAdminProducts() {
+      const products = JSON.parse(localStorage.getItem('thisshop_products')) || [];
+      const container = document.getElementById('admin-products-list');
+      container.innerHTML = products.map(p => `
+        <div class="bg-white p-3 rounded-xl border shadow-sm flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-3">
+            <img src="${p.img}" class="w-12 h-12 object-cover rounded-lg">
+            <div>
+              <p class="font-bold line-clamp-1">${p.name_my}</p>
+              <p class="text-thisshop-red font-mono font-bold">${p.price.toLocaleString()} MMK</p>
+            </div>
+          </div>
+          <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-2">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
