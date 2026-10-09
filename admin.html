@@ -115,11 +115,11 @@
       <section id="tab-content-analytics" class="hidden space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-white p-5 rounded-xl border shadow-sm">
-            <p class="text-xs text-gray-500 font-bold">ယနေ့ အရောင်းရဆုံး ยอด</p>
+            <p class="text-xs text-gray-500 font-bold">ယနေ့ အရောင်းရဆုံး </p>
             <p id="analytics-today" class="text-2xl font-black text-thisshop-red font-mono">0 MMK</p>
           </div>
           <div class="bg-white p-5 rounded-xl border shadow-sm">
-            <p class="text-xs text-gray-500 font-bold">စုစုပေါင်း အရောင်းရဆုံး ยอด</p>
+            <p class="text-xs text-gray-500 font-bold">စုစုပေါင်း အရောင်းရဆုံး</p>
             <p id="analytics-month" class="text-2xl font-black text-blue-600 font-mono">0 MMK</p>
           </div>
           <div class="bg-white p-5 rounded-xl border shadow-sm">
@@ -381,7 +381,37 @@
       closeSlipInspectModal();
       refreshData();
     }
+function renderAnalytics(orders) {
+  let todaySales = 0;
+  let totalSales = 0;
+  const totalCount = orders ? orders.length : 0;
+  const todayStr = new Date().toISOString().split('T')[0];
 
+  if (orders && Array.isArray(orders)) {
+    orders.forEach(o => {
+      // ดึงค่ายอดเงิน ตัด comma ออก และแปลงเป็นตัวเลขเพื่อป้องกัน NaN
+      const rawPrice = o.totalAmount || o.total || 0;
+      const cleanPrice = String(rawPrice).replace(/,/g, '').trim();
+      const amount = parseFloat(cleanPrice) || 0;
+
+      totalSales += amount;
+
+      const orderDate = o.createdAt || o.date || '';
+      if (orderDate.startsWith(todayStr)) {
+        todaySales += amount;
+      }
+    });
+  }
+
+  // หยอดค่าลง Element บนหน้าเว็บ
+  const elToday = document.getElementById('analytics-today');
+  const elMonth = document.getElementById('analytics-month');
+  const elCount = document.getElementById('analytics-count');
+
+  if (elToday) elToday.innerText = `${todaySales.toLocaleString()} MMK`;
+  if (elMonth) elMonth.innerText = `${totalSales.toLocaleString()} MMK`;
+  if (elCount) elCount.innerText = totalCount.toLocaleString();
+}
     function renderUsersTable() {
       const users = JSON.parse(localStorage.getItem('thisshop_users')) || [];
       const tbody = document.getElementById('tbl-users-body');
