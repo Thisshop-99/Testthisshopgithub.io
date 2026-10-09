@@ -537,43 +537,35 @@ function renderAnalytics(orders) {
   const elToday = document.getElementById('analytics-today');
   const elMonth = document.getElementById('analytics-month');
   const elCount = document.getElementById('analytics-count');
-if (elToday) elToday.innerText = todaySales.toLocaleString() + ' MMK';
+const elToday = document.getElementById('analytics-today');
+  const elMonth = document.getElementById('analytics-month');
+  const elCount = document.getElementById('analytics-count');
+
+  if (elToday) elToday.innerText = todaySales.toLocaleString() + ' MMK';
   if (elMonth) elMonth.innerText = totalSales.toLocaleString() + ' MMK';
   if (elCount) elCount.innerText = totalCount.toLocaleString();
 }
+</script>
 
-// 1. ดึงไฟล์ Firebase SDK หรือ Config ต่อได้ทันทีโดยไม่ต้องใส่ </script><script> แทรกกลาง
+<!-- 1. ดึงไฟล์ Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-const firebaseConfig = {
-  apiKey: "AiZaSyCKv3QF8DCuiJNcNNhMyyq4llbF5fFJng4",
-  authDomain: "thisshop-mm.firebaseapp.com",
-  databaseURL: "https://thisshop-mm-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "thisshop-mm",
-  storageBucket: "thisshop-mm.appspot.com",
-  messagingSenderId: "995685037892",
-  appId: "1:995685037892:web:b34bee2a3d5090439bc911"
-};
-      databaseURL: "https://thisshop-mm-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "thisshop-mm",
-      storageBucket: "thisshop-mm.appspot.com",
-      messagingSenderId: "995685037892",
-      appId: "1:995685037892:web:b34bee2a3d5090439bc911"
-    };
+<!-- 2. สคริปต์ Config และ Firebase -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AiZaSyCKv3QF8DCuiJNcNNhMyyq4llbF5fFJng4",
+    authDomain: "thisshop-mm.firebaseapp.com",
+    databaseURL: "https://thisshop-mm-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "thisshop-mm",
+    storageBucket: "thisshop-mm.appspot.com",
+    messagingSenderId: "995685037892",
+    appId: "1:995685037892:web:b34bee2a3d5090439bc911"
+  };
 
-    // เริ่มต้นใช้งาน Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const storage = firebase.storage();
-
-    // ดึงข้อมูลออเดอร์เรียลไทม์
-    db.ref('orders').on('value', (snapshot) => {
-      const data = snapshot.val();
-      console.log("ข้อมูลจาก Firebase:", data);
-      if (data && typeof renderOrdersTable === 'function') {
-        renderOrdersTable(Object.values(data));
-      }
-    });
-  </script>
-
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
 </body>
 </html>
