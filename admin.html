@@ -512,14 +512,40 @@ function renderAnalytics(orders) {
     }
 
     function renderAnalytics() {
-      const orders = JSON.parse(localStorage.getItem('thisshop_orders')) || [];
-      const approvedOrders = orders.filter(o => o.status !== 'rejected');
-      const totalRev = approvedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const orders = JSON.parse(localStorage.getItem('thisshop_orders')) || [];
+  
+  let todaySales = 0;
+  let totalSales = 0;
+  const totalCount = orders.length;
+  const todayStr = new Date().toISOString().split('T')[0];
 
-      document.getElementById('analytics-today').innerText = totalRev.toLocaleString() + ' MMK';
-      document.getElementById('analytics-month').innerText = totalRev.toLocaleString() + ' MMK';
-      } // <-- ตรวจสอบว่าฟังก์ชัน JavaScript ก่อนหน้ามีปีกกาปิดครบถ้วนหรือไม่
-  </script> <!-- แท็กปิดสคริปต์หลักเดิม -->
+  orders.forEach(o => {
+    // กรองเอาเฉพาะออเดอร์ที่ไม่ถูกปฏิเสธ (not rejected)
+    if (o.status !== 'rejected') {
+      const rawPrice = o.totalAmount || o.total || 0;
+      // ลบเครื่องหมาย comma และช่องว่าง ออกก่อนแปลงเป็นตัวเลขเพื่อป้องกัน NaN
+      const cleanPrice = String(rawPrice).replace(/,/g, '').trim();
+      const amount = parseFloat(cleanPrice) || 0;
+
+      totalSales += amount;
+
+      const orderDate = o.createdAt || o.date || '';
+      if (orderDate.startsWith(todayStr)) {
+        todaySales += amount;
+      }
+    }
+  });
+
+  // หยอดค่าลงหน้าเว็บ
+  const elToday = document.getElementById('analytics-today');
+  const elMonth = document.getElementById('analytics-month');
+  const elCount = document.getElementById('analytics-count');
+
+  if (elToday) elToday.innerText = todaySales.toLocaleString() + ' MMK';
+  if (elMonth) elMonth.innerText = totalSales.toLocaleString() + ' MMK';
+  if (elCount) elCount.innerText = totalCount.toLocaleString();
+}
+</script>
 
   <!-- 1. ดึงไฟล์ Firebase SDK (ต้องมีครบทั้ง 3 บรรทัด) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
