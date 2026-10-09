@@ -497,38 +497,43 @@
         <div class="bg-white p-3 rounded-xl border shadow-sm flex items-center justify-between text-xs">
           <div class="flex items-center space-x-3">
             <img src="${p.img}" class="w-12 h-12 object-cover rounded-lg">
-            <div>
-              <p class="font-bold line-clamp-1">${p.name_my}</p>
-              <p class="text-thisshop-red font-mono font-bold">${p.price.toLocaleString()} MMK</p>
-            </div>
-          </div>
-          <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-2">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      `).join('');
-    }
-  <!-- 1. ดึงไฟล์ไลบรารี Firebase -->
+            <!-- 1. ดึงไฟล์ Firebase SDK (ต้องเรียงลำดับตามนี้เป๊ะๆ) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-  <!-- 2. ตั้งค่าและเริ่มสั่งทำงาน Firebase -->
+  <!-- 2. สคริปต์ตั้งค่า และดึงข้อมูล Realtime -->
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyDHytYABjpXCRh3iIJW6_kapMokjTJv2x0",
-  authDomain: "thisshop-mm.firebaseapp.com",
-  projectId: "thisshop-mm",
-  storageBucket: "thisshop-mm.firebasestorage.app",
-  messagingSenderId: "863986665069",
-  appId: "1:863986665069:web:88fc65bfb768932ff1e164",
-  measurementId: "G-EWSPC9ZDT7"
-};
+      apiKey: "AIzaSyCKv3QF8DcuIjNcNNhMyyq4llbF5fFJng4",
+      authDomain: "thisshop-mm.firebaseapp.com",
+      databaseURL: "https://thisshop-mm-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thisshop-mm",
+      storageBucket: "thisshop-mm.appspot.com",
+      messagingSenderId: "995685037892",
+      appId: "1:995685037892:web:b34bee2a3d5090439bc911"
+    };
 
-    // คำสั่งสั่งให้ระบบเริ่มทำงาน
+    // เริ่มต้น Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const storage = firebase.storage();
+
+    // ดึงข้อมูลออเดอร์มาแสดงผลแบบ Real-time
+    db.ref('orders').on('value', (snapshot) => {
+      const data = snapshot.val();
+      console.log("ข้อมูลจาก Firebase:", data);
+      
+      if (data) {
+        const ordersList = Object.values(data);
+        if (typeof renderOrdersTable === 'function') {
+          renderOrdersTable(ordersList);
+        }
+      }
+    }, (error) => {
+      console.error("Firebase Error:", error);
+    });
   </script>
+
 </body>
 </html>
