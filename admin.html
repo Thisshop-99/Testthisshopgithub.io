@@ -537,10 +537,6 @@ function renderAnalytics(orders) {
   const elToday = document.getElementById('analytics-today');
   const elMonth = document.getElementById('analytics-month');
   const elCount = document.getElementById('analytics-count');
-const elToday = document.getElementById('analytics-today');
-  const elMonth = document.getElementById('analytics-month');
-  const elCount = document.getElementById('analytics-count');
-
   if (elToday) elToday.innerText = todaySales.toLocaleString() + ' MMK';
   if (elMonth) elMonth.innerText = totalSales.toLocaleString() + ' MMK';
   if (elCount) elCount.innerText = totalCount.toLocaleString();
