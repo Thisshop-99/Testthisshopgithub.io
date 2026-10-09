@@ -537,22 +537,22 @@ function renderAnalytics(orders) {
   const elToday = document.getElementById('analytics-today');
   const elMonth = document.getElementById('analytics-month');
   const elCount = document.getElementById('analytics-count');
-
-  if (elToday) elToday.innerText = todaySales.toLocaleString() + ' MMK';
+if (elToday) elToday.innerText = todaySales.toLocaleString() + ' MMK';
   if (elMonth) elMonth.innerText = totalSales.toLocaleString() + ' MMK';
   if (elCount) elCount.innerText = totalCount.toLocaleString();
 }
-</script>
-  <!-- 1. ดึงไฟล์ Firebase SDK (ต้องมีครบทั้ง 3 บรรทัด) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-  <!-- 2. สคริปต์ Config และฟังข้อมูล Real-time -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCKv3QF8DcuIjNcNNhMyyq4llbF5fFJng4",
-      authDomain: "thisshop-mm.firebaseapp.com",
+// 1. ดึงไฟล์ Firebase SDK หรือ Config ต่อได้ทันทีโดยไม่ต้องใส่ </script><script> แทรกกลาง
+
+const firebaseConfig = {
+  apiKey: "AiZaSyCKv3QF8DCuiJNcNNhMyyq4llbF5fFJng4",
+  authDomain: "thisshop-mm.firebaseapp.com",
+  databaseURL: "https://thisshop-mm-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "thisshop-mm",
+  storageBucket: "thisshop-mm.appspot.com",
+  messagingSenderId: "995685037892",
+  appId: "1:995685037892:web:b34bee2a3d5090439bc911"
+};
       databaseURL: "https://thisshop-mm-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "thisshop-mm",
       storageBucket: "thisshop-mm.appspot.com",
