@@ -508,6 +508,28 @@
         </div>
       `).join('');
     }
+  <!-- 1. ดึงไฟล์ไลบรารี Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+  <!-- 2. ตั้งค่าและเริ่มสั่งทำงาน Firebase -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKv3QF8DcuIjNcNNhMyyq4llbF5fFJng4",
+      authDomain: "thisshop-direct-7822a.firebaseapp.com",
+      databaseURL: "https://thisshop-direct-7822a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thisshop-direct-7822a",
+      storageBucket: "thisshop-direct-7822a.firebasestorage.app",
+      messagingSenderId: "995685037892",
+      appId: "1:995685037892:web:b34bee2a3d5090439bc911",
+      measurementId: "G-DGP1R87EQR"
+    };
+
+    // คำสั่งสั่งให้ระบบเริ่มทำงาน
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
   </script>
 </body>
 </html>
