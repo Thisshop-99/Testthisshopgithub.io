@@ -280,9 +280,9 @@
     renderOrdersTable();
     renderUsersTable();
     renderAnalytics(orders);
-    renderAdminProducts();
-}
-
+    if (typeof renderAdminProducts === 'function') {
+        renderAdminProducts();
+    }
     function switchTab(tab) {
       ['orders', 'users', 'analytics', 'products'].forEach(t => {
         document.getElementById(`tab-content-${t}`).classList.add('hidden');
